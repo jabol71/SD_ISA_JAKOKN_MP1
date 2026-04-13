@@ -3,3 +3,5 @@
 .vs/
 .vscode/
 results.csv
+aver.py
+averaged_results.csv
