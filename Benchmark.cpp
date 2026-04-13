@@ -6,24 +6,28 @@
 #include <fstream>
 #include <chrono>
 #include <cstdlib>
-#include <vector>
 
 using namespace std::chrono;
 
+// Uruchamia wszystkie testy wydajnosciowe dla kazdej struktury danych
 void Benchmark::runAllBenchmarks() {
-    int sizes[] = {5000, 10000, 15000, 20000, 25000, 30000, 40000, 50000};
-    int numSizes = 8;
-    int iterations = 100; // Liczba prob dla kazdego rozmiaru
+    // Rozmiary struktur do przebadania (min. 8 punktow pomiarowych)
+    unsigned int sizes[] = {5000, 10000, 15000, 20000, 25000, 30000, 40000, 50000, 60000, 70000, 80000, 90000, 100000};
+    unsigned int numSizes = 13;
+    unsigned int iterations = 100; // Liczba prob dla kazdego rozmiaru
 
+    // Otwarcie pliku CSV do zapisu wynikow
     std::ofstream out("results.csv");
     out << "Structure,Operation,Size,Time_ns\n";
 
     std::cout << "Rozpoczynam testy (moze to chwile potrwac)...\n";
 
+    // Petla po rozmiarach struktur
     for (int s = 0; s < numSizes; ++s) {
         int currentSize = sizes[s];
         std::cout << "Testuje rozmiar: " << currentSize << std::endl;
 
+        // Akumulatory czasu dla poszczegolnych operacji [ns]
         long long timeArr_addF = 0, timeSLL_addF = 0, timeDLL_addF = 0;
         long long timeArr_addB = 0, timeSLL_addB = 0, timeDLL_addB = 0;
         long long timeArr_addR = 0, timeSLL_addR = 0, timeDLL_addR = 0;
@@ -34,162 +38,192 @@ void Benchmark::runAllBenchmarks() {
 
         long long timeArr_find = 0, timeSLL_find = 0, timeDLL_find = 0;
 
+        // Petla pomiarowa - w kazdej iteracji generujemy nowa populacje danych
         for (int i = 0; i < iterations; ++i) {
-            std::vector<int> initData(currentSize);
+            // Generowanie losowych danych poczatkowych (wspolnych dla wszystkich struktur)
+            int* initData = new int[currentSize];
             for(int j=0; j<currentSize; ++j) {
                 initData[j] = std::rand();
             }
 
+            // Losowe parametry operacji (wspolne dla wszystkich struktur w danej iteracji)
             int randIndexAdd = std::rand() % (currentSize + 1);
             int randIndexRem = std::rand() % currentSize;
             int randValAdd = std::rand();
             int randValSearch = std::rand();
 
-            // --- ARRAY LIST ---
+            // --- TABLICA DYNAMICZNA (ArrayList) ---
+            // Tworzenie nowej struktury i wypelnianie danymi poczatkowymi
             ArrayList arr;
             for(int j=0; j<currentSize; ++j) arr.addBack(initData[j]);
             
+            // Pomiar dodawania na poczatek
             auto start = high_resolution_clock::now();
             arr.addFront(randValAdd);
             auto end = high_resolution_clock::now();
             timeArr_addF += duration_cast<nanoseconds>(end - start).count();
 
-            arr.removeFront(); // Przywrocenie rozmiaru
+            arr.removeFront(); // Przywrocenie rozmiaru struktury
 
+            // Pomiar dodawania na koniec
             start = high_resolution_clock::now();
             arr.addBack(randValAdd);
             end = high_resolution_clock::now();
             timeArr_addB += duration_cast<nanoseconds>(end - start).count();
 
-            arr.removeBack();
+            arr.removeBack(); // Przywrocenie rozmiaru struktury
 
+            // Pomiar dodawania na losowa pozycje
             start = high_resolution_clock::now();
             arr.addAt(randIndexAdd, randValAdd);
             end = high_resolution_clock::now();
             timeArr_addR += duration_cast<nanoseconds>(end - start).count();
 
-            arr.removeAt(randIndexAdd);
+            arr.removeAt(randIndexAdd); // Przywrocenie rozmiaru struktury
 
+            // Pomiar usuwania z poczatku
             start = high_resolution_clock::now();
             arr.removeFront();
             end = high_resolution_clock::now();
             timeArr_remF += duration_cast<nanoseconds>(end - start).count();
 
-            arr.addFront(initData[0]); // Przywrocenie
+            arr.addFront(initData[0]); // Przywrocenie rozmiaru struktury
 
+            // Pomiar usuwania z konca
             start = high_resolution_clock::now();
             arr.removeBack();
             end = high_resolution_clock::now();
             timeArr_remB += duration_cast<nanoseconds>(end - start).count();
 
-            arr.addBack(initData[currentSize-1]);
+            arr.addBack(initData[currentSize-1]); // Przywrocenie rozmiaru struktury
 
+            // Pomiar usuwania z losowej pozycji
             start = high_resolution_clock::now();
             arr.removeAt(randIndexRem);
             end = high_resolution_clock::now();
             timeArr_remR += duration_cast<nanoseconds>(end - start).count();
 
-            arr.addAt(randIndexRem, initData[randIndexRem]);
+            arr.addAt(randIndexRem, initData[randIndexRem]); // Przywrocenie rozmiaru struktury
 
+            // Pomiar wyszukiwania elementu
             start = high_resolution_clock::now();
             arr.find(randValSearch);
             end = high_resolution_clock::now();
             timeArr_find += duration_cast<nanoseconds>(end - start).count();
 
 
-            // --- SINGLY LINKED LIST ---
+            // --- LISTA JEDNOKIERUNKOWA (SinglyLinkedList) ---
+            // Tworzenie nowej struktury i wypelnianie tymi samymi danymi
             SinglyLinkedList sll;
             for(int j=0; j<currentSize; ++j) sll.addBack(initData[j]);
 
+            // Pomiar dodawania na poczatek
             start = high_resolution_clock::now();
             sll.addFront(randValAdd);
             end = high_resolution_clock::now();
             timeSLL_addF += duration_cast<nanoseconds>(end - start).count();
-            sll.removeFront();
+            sll.removeFront(); // Przywrocenie rozmiaru
 
+            // Pomiar dodawania na koniec
             start = high_resolution_clock::now();
             sll.addBack(randValAdd);
             end = high_resolution_clock::now();
             timeSLL_addB += duration_cast<nanoseconds>(end - start).count();
-            sll.removeBack();
+            sll.removeBack(); // Przywrocenie rozmiaru
 
+            // Pomiar dodawania na losowa pozycje
             start = high_resolution_clock::now();
             sll.addAt(randIndexAdd, randValAdd);
             end = high_resolution_clock::now();
             timeSLL_addR += duration_cast<nanoseconds>(end - start).count();
-            sll.removeAt(randIndexAdd);
+            sll.removeAt(randIndexAdd); // Przywrocenie rozmiaru
 
+            // Pomiar usuwania z poczatku
             start = high_resolution_clock::now();
             sll.removeFront();
             end = high_resolution_clock::now();
             timeSLL_remF += duration_cast<nanoseconds>(end - start).count();
-            sll.addFront(initData[0]);
+            sll.addFront(initData[0]); // Przywrocenie rozmiaru
 
+            // Pomiar usuwania z konca
             start = high_resolution_clock::now();
             sll.removeBack();
             end = high_resolution_clock::now();
             timeSLL_remB += duration_cast<nanoseconds>(end - start).count();
-            sll.addBack(initData[currentSize-1]);
+            sll.addBack(initData[currentSize-1]); // Przywrocenie rozmiaru
 
+            // Pomiar usuwania z losowej pozycji
             start = high_resolution_clock::now();
             sll.removeAt(randIndexRem);
             end = high_resolution_clock::now();
             timeSLL_remR += duration_cast<nanoseconds>(end - start).count();
-            sll.addAt(randIndexRem, initData[randIndexRem]);
+            sll.addAt(randIndexRem, initData[randIndexRem]); // Przywrocenie rozmiaru
 
+            // Pomiar wyszukiwania elementu
             start = high_resolution_clock::now();
             sll.find(randValSearch);
             end = high_resolution_clock::now();
             timeSLL_find += duration_cast<nanoseconds>(end - start).count();
 
 
-            // --- DOUBLY LINKED LIST ---
+            // --- LISTA DWUKIERUNKOWA (DoublyLinkedList) ---
+            // Tworzenie nowej struktury i wypelnianie tymi samymi danymi
             DoublyLinkedList dll;
             for(int j=0; j<currentSize; ++j) dll.addBack(initData[j]);
 
+            // Pomiar dodawania na poczatek
             start = high_resolution_clock::now();
             dll.addFront(randValAdd);
             end = high_resolution_clock::now();
             timeDLL_addF += duration_cast<nanoseconds>(end - start).count();
-            dll.removeFront();
+            dll.removeFront(); // Przywrocenie rozmiaru
 
+            // Pomiar dodawania na koniec
             start = high_resolution_clock::now();
             dll.addBack(randValAdd);
             end = high_resolution_clock::now();
             timeDLL_addB += duration_cast<nanoseconds>(end - start).count();
-            dll.removeBack();
+            dll.removeBack(); // Przywrocenie rozmiaru
 
+            // Pomiar dodawania na losowa pozycje
             start = high_resolution_clock::now();
             dll.addAt(randIndexAdd, randValAdd);
             end = high_resolution_clock::now();
             timeDLL_addR += duration_cast<nanoseconds>(end - start).count();
-            dll.removeAt(randIndexAdd);
+            dll.removeAt(randIndexAdd); // Przywrocenie rozmiaru
 
+            // Pomiar usuwania z poczatku
             start = high_resolution_clock::now();
             dll.removeFront();
             end = high_resolution_clock::now();
             timeDLL_remF += duration_cast<nanoseconds>(end - start).count();
-            dll.addFront(initData[0]);
+            dll.addFront(initData[0]); // Przywrocenie rozmiaru
 
+            // Pomiar usuwania z konca
             start = high_resolution_clock::now();
             dll.removeBack();
             end = high_resolution_clock::now();
             timeDLL_remB += duration_cast<nanoseconds>(end - start).count();
-            dll.addBack(initData[currentSize-1]);
+            dll.addBack(initData[currentSize-1]); // Przywrocenie rozmiaru
 
+            // Pomiar usuwania z losowej pozycji
             start = high_resolution_clock::now();
             dll.removeAt(randIndexRem);
             end = high_resolution_clock::now();
             timeDLL_remR += duration_cast<nanoseconds>(end - start).count();
-            dll.addAt(randIndexRem, initData[randIndexRem]);
+            dll.addAt(randIndexRem, initData[randIndexRem]); // Przywrocenie rozmiaru
 
+            // Pomiar wyszukiwania elementu
             start = high_resolution_clock::now();
             dll.find(randValSearch);
             end = high_resolution_clock::now();
             timeDLL_find += duration_cast<nanoseconds>(end - start).count();
+
+            // Zwolnienie pamieci po tablicy danych poczatkowych
+            delete[] initData;
         }
 
-        // Zapis dla tablicy dynamicznej
+        // Zapis usrednionych wynikow dla tablicy dynamicznej
         out << "ArrayList,AddFront," << currentSize << "," << timeArr_addF / iterations << "\n";
         out << "ArrayList,AddBack," << currentSize << "," << timeArr_addB / iterations << "\n";
         out << "ArrayList,AddRandom," << currentSize << "," << timeArr_addR / iterations << "\n";
@@ -198,7 +232,7 @@ void Benchmark::runAllBenchmarks() {
         out << "ArrayList,RemoveRandom," << currentSize << "," << timeArr_remR / iterations << "\n";
         out << "ArrayList,Find," << currentSize << "," << timeArr_find / iterations << "\n";
 
-        // Zapis dla listy jednokierunkowej
+        // Zapis usrednionych wynikow dla listy jednokierunkowej
         out << "SinglyLinkedList,AddFront," << currentSize << "," << timeSLL_addF / iterations << "\n";
         out << "SinglyLinkedList,AddBack," << currentSize << "," << timeSLL_addB / iterations << "\n";
         out << "SinglyLinkedList,AddRandom," << currentSize << "," << timeSLL_addR / iterations << "\n";
@@ -207,7 +241,7 @@ void Benchmark::runAllBenchmarks() {
         out << "SinglyLinkedList,RemoveRandom," << currentSize << "," << timeSLL_remR / iterations << "\n";
         out << "SinglyLinkedList,Find," << currentSize << "," << timeSLL_find / iterations << "\n";
 
-        // Zapis dla listy dwukierunkowej
+        // Zapis usrednionych wynikow dla listy dwukierunkowej
         out << "DoublyLinkedList,AddFront," << currentSize << "," << timeDLL_addF / iterations << "\n";
         out << "DoublyLinkedList,AddBack," << currentSize << "," << timeDLL_addB / iterations << "\n";
         out << "DoublyLinkedList,AddRandom," << currentSize << "," << timeDLL_addR / iterations << "\n";

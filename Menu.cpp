@@ -7,10 +7,12 @@
 #include <fstream>
 #include <cstdlib>
 
+// Generowanie losowej liczby z podanego zakresu <min, max>
 int Menu::getRandomNumber(int min, int max) {
     return min + std::rand() % ((max + 1) - min);
 }
 
+// Szablon funkcji wyswietlajacej podmenu operacji dla wybranej struktury danych
 template<typename T>
 void runMenuForStructure(T& ds, const std::string& name) {
     int choice = -1;
@@ -103,6 +105,7 @@ void runMenuForStructure(T& ds, const std::string& name) {
     }
 }
 
+// Wybor i utworzenie odpowiedniej struktury danych na podstawie nazwy
 void Menu::structureMenu(const std::string& structName) {
     if (structName == "ArrayList") {
         ArrayList arr;
@@ -116,11 +119,13 @@ void Menu::structureMenu(const std::string& structName) {
     }
 }
 
+// Uruchomienie automatycznych testow wydajnosciowych
 void Menu::runBenchmark() {
     Benchmark bench;
     bench.runAllBenchmarks();
 }
 
+// Wyswietlenie menu glownego programu
 void Menu::showMainMenu() {
     int choice = -1;
     while (choice != 0) {
